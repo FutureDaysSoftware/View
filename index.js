@@ -1,4 +1,5 @@
 const { EventEmitter } = require('events')
+const MyObject = require('./lib/MyObject')
 
 module.exports = class View extends EventEmitter {
 
@@ -7,7 +8,6 @@ module.exports = class View extends EventEmitter {
     //Model = require('../models/__proto__')
     OptimizedResize = require('./lib/OptimizedResize')
     Xhr = require('./Xhr')
-    MyObject = require('./lib/MyObject')
     Renderer = require('./Renderer')
 
     $( el, selector ) { return Array.from( el.querySelectorAll( selector ) ) }
@@ -41,7 +41,7 @@ module.exports = class View extends EventEmitter {
         super()
         
         if( opts.events ) { Object.assign( this.events, opts.events ); delete opts.events; }
-        Object.assign( this.MyObject, this, opts )
+        Object.assign( MyObject, this, opts )
 
         this.subviewElements = [ ]
 
