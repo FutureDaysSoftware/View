@@ -1,78 +1,46 @@
 const { EventEmitter } = require('events')
-const MyObject = require('./lib/MyObject')
 
 module.exports = class View extends EventEmitter {
-
-    TemplateContext = require('./TemplateContext')
-    UUID = require('uuid/v4')
+    
+    static Error = require('./lib/MyError')
+    static Factory = require('./Factory')
     //Model = require('../models/__proto__')
-    OptimizedResize = require('./lib/OptimizedResize')
-    Xhr = require('./Xhr')
-    Renderer = require('./Renderer')
+    static OptimizedResize = require('./lib/OptimizedResize')
+    static Slurper = require('./Slurper')
+    static TemplateContext = require('./TemplateContext')
+    static Util = require('./lib/Util')
+    static UUID = require('uuid/v4')
+    static Xhr = require('./Xhr')
 
-    $( el, selector ) { return Array.from( el.querySelectorAll( selector ) ) }
+    animate( el, klass ) {
+        return new Promise( resolve => {
+            const onAnimationEnd = e => {
+                el.classList.remove( klass )
+                el.removeEventListener( 'animationend', onAnimationEnd )
+                resolve()
+            }
 
-    addEl( el, key ) {
-        if( key === 'container' ) {
-            el.classList.add( this.name )
-            if( this.templateName ) el.classList.add( this.templateName )
-            if( this.klass ) el.classList.add( this.klass )
-        }
-
-        this.els[ key ] = Array.isArray( this.els[ key ] )
-            ? this.els[ key ].concat( el )
-            : ( this.els[ key ] !== undefined )
-                ? [ this.els[ key ], el ]
-                : el
-
-        if( this.events[ key ] ) this.delegateEvents( key, el )
-    }
-
-    bindEvent( key, event, el ) {
-        const els = el ? [ el ] : Array.isArray( this.els[ key ] ) ? this.els[ key ] : [ this.els[ key ] ],
-           name = this.getEventMethodName( key, event )
-
-        if( !this[ `_${name}` ] ) this[ `_${name}` ] = e => this[ name ](e)
-
-        els.forEach( el => el.addEventListener( event || 'click', this[ `_${name}` ] ) )
+            el.addEventListener( 'animationend', onAnimationEnd )
+            el.classList.add( klass )
+        } )
     }
 
     constructor( opts={} ) {
         super()
-        
-        if( opts.events ) { Object.assign( this.events, opts.events ); delete opts.events; }
-        Object.assign( MyObject, this, opts )
-
-        this.subviewElements = [ ]
-
-        this.Renderer
-        .on( 'elSlurped', ( el, key ) => this.addEl( el, key ) )
-        .on( 'imgSlurped', el => this.fadeInImage( el ) )
-        .on( 'viewSlurped', viewDatum => this.subviewElements.push( [ viewDatum ] ) )
-        .on( 'storeFragment', fragment => Object.assign( this, fragment ) )
-        .on( 'renderSubviews', () => this.renderSubviews() )
+        Object.assign( this, opts, { els: { }, views: { } } )
 
         if( this.requiresLogin && ( !this.user.isLoggedIn() ) ) return this.handleLogin()
         if( this.user && !this.isAllowed( this.user ) ) return this.scootAway()
 
-        return this.initialize().render()
+        return this.render()
     }
 
-    delegateEvents( key, el ) {
-        const type = typeof this.events[key]
-
-        if( type === "string" ) { this.bindEvent( key, this.events[key], el ) }
-        else if( Array.isArray( this.events[key] ) ) {
-            this.events[ key ].forEach( eventObj => this.bindEvent( key, eventObj ) )
-        } else {
-            this.bindEvent( key, this.events[key].event )
-        }
-    }
+    content = document.querySelector('#content')
 
     async delete( { silent } = { silent: false } ) {
         await this.hide()
 
-        const container = this.els.container,
+        const { container } = this.els,
             parent = container.parentNode
         if( container && parent ) parent.removeChild( container )
         if( !silent ) this.emit('deleted')
@@ -80,64 +48,22 @@ module.exports = class View extends EventEmitter {
 
     events = { }
 
-    fadeInImage( el ) {
-        el.onload = () => {
-            this.emit( 'imgLoaded', el )
-            el.removeAttribute('data-src')
-        }
-
-        el.setAttribute( 'src', el.getAttribute('data-src') )
-    }
-
-    getEventMethodName( key, event ) { return `on${this.capitalizeFirstLetter(key)}${this.capitalizeFirstLetter(event)}` }
-
-    getContainer() { return this.els.container }
-
     getTemplateOptions() {
        return { user: this.user ? this.user.data : {}, model: this.model }
     }
 
     handleLogin() {
-        this.factory.create( 'login', { insertion: { el: document.querySelector('#content') } } )
+        this.Factory.create( 'login', { insertion: { el: document.querySelector('#content') } } )
         .on( "loggedIn", () => this.onLogin() )
 
         return this
     }
 
-    async hide( isSlow ) {
-        if( !this.els || this.isHiding ) return
+    hide() { return this.hideEl( this.els.container ) }
 
-        this.isHiding = true;
-        await this.hideEl( this.els.container, isSlow )
-        this.isHiding = false
-    }
+    async hideEl( el ) { await this.animate( el, 'hide' ); el.classList.add('hidden') }
 
     hideSync() { this.els.container.classList.add('hidden'); return this }
-
-    _hideEl( el, resolve, hash, isSlow ) {
-        el.removeEventListener( 'animationend', this[ hash ] )
-        el.classList.add('hidden')
-        el.classList.remove(`animate-out${ isSlow ? '-slow' : ''}`)
-        delete this[hash]
-        resolve()
-    }
-
-    hideEl( el, isSlow ) {
-        if( this.isHidden( el ) ) return
-
-        const uuid = this.UUID(),
-            hash = `${uuid}Hide`
-
-        return new Promise( resolve => {
-            this[ hash ] = e => this._hideEl( el, resolve, hash, isSlow )
-            el.addEventListener( 'animationend', this[ hash ] )
-            el.classList.add(`animate-out${ isSlow ? '-slow' : ''}`)
-        } )
-    }
-
-    initialize() {
-        return { ...this, els: { }, views: { } }
-    }
 
     isAllowed( user ) {
         if( !this.requiresRole ) return true
@@ -158,14 +84,12 @@ module.exports = class View extends EventEmitter {
     isHidden( el ) { return el ? el.classList.contains('hidden') : this.els.container.classList.contains('hidden') }
 
     onLogin() {
-
         if( !this.isAllowed( this.user ) ) return this.scootAway()
-
-        this.initialize().render()
+        this.render()
     }
 
     async onNavigation() {
-        await this.show()
+        return this.show().catch( this.Error )
     }
 
     showNoAccess() {
@@ -178,12 +102,15 @@ module.exports = class View extends EventEmitter {
     render() {
         if( this.data ) this.model = Object.create( this.Model, { } ).constructor( this.data )
 
-        this.Renderer.slurpTemplate( {
+        this.slurp( {
             insertion: this.insertion || { el: document.body },
             isView: true,
-            storeFragment: this.storeFragment,
             template: Reflect.apply( this.template, this.TemplateContext, [ this.getTemplateOptions() ] )
         } )
+
+        this.els.container.classList.add( this.name )
+        if( this.templateName ) this.els.container.classList.add( this.templateName )
+        if( this.klass ) this.els.container.classList.add( this.klass )
 
         this.renderSubviews()
 
@@ -206,7 +133,7 @@ module.exports = class View extends EventEmitter {
             if( this.Views && this.Views[ obj.view ] ) opts = typeof this.Views[ obj.view ] === "object" ? this.Views[ obj.view ] : Reflect.apply( this.Views[ obj.view ], this, [ ] )
             if( this.Views && this.Views[ name ] ) opts = typeof this.Views[ name ] === "object" ? this.Views[ name ] : Reflect.apply( this.Views[ name ], this, [ ] )
 
-            this.views[ name ] = this.factory.create( obj.view, Object.assign( { insertion: { el: obj.el, method: 'insertBefore' } }, opts ) )
+            this.views[ name ] = this.Factory.create( obj.view, Object.assign( { insertion: { el: obj.el, method: 'insertBefore' } }, opts ) )
 
             if( this.events.views ) {
                 if( this.events.views[ name ] ) this.events.views[ name ].forEach( arr => this.views[ name ].on( arr[0], eventData => Reflect.apply( arr[1], this, [ eventData ] ) ) )
@@ -230,30 +157,15 @@ module.exports = class View extends EventEmitter {
         return this
     }
 
-    async show( isSlow ) {
-        await this.showEl( this.els.container, isSlow )
-    }
+    show() { return this.showEl( this.els.container ) }
+
+    showEl( el ) { el.classList.remove('hidden'); return this.animate( el, 'show' ) }
 
     showSync() { this.els.container.classList.remove('hidden'); return this }
 
-    _showEl( el, resolve, hash, isSlow ) {
-        el.removeEventListener( 'animationend', this[hash] )
-        el.classList.remove(`animate-in${ isSlow ? '-slow' : ''}`)
-        delete this[ hash ]
-        resolve()
-    }
+    slurp( opts ) { return Reflect.apply( this.Slurper.slurpTemplate, this, [ this.els, this.events, this.subviewElements, opts ] ) }
 
-    showEl( el, isSlow ) {
-        const uuid = this.UUID(),
-            hash = `${uuid}Show`
-
-        return new Promise( resolve => {
-            this[ hash ] = e => this._showEl( el, resolve, hash, isSlow )
-            el.addEventListener( 'animationend', this[ hash ] )
-            el.classList.remove('hidden')
-            el.classList.add(`animate-in${ isSlow ? '-slow' : ''}`)
-        } )        
-    }
+    subviewElements = [ ]
 
     unbindEvent( key, event, el ) {
         const els = el ? [ el ] : Array.isArray( this.els[ key ] ) ? this.els[ key ] : [ this.els[ key ] ],
