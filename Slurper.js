@@ -22,11 +22,7 @@ module.exports = class Slurper extends EventEmitter {
     }
 
     static FadeInImage( el ) {
-        el.onload = () => {
-            this.emit( 'imgLoaded', el )
-            el.removeAttribute('data-src')
-        }
-
+        el.onload = () => this.OnImgLoad( el )
         el.setAttribute( 'src', el.getAttribute('data-src') )
     }
 
@@ -42,6 +38,11 @@ module.exports = class Slurper extends EventEmitter {
         insertion.method === 'insertBefore'
             ? insertion.el.parentNode.insertBefore( fragment, insertion.el )
             : insertion.el[ insertion.method || 'appendChild' ]( fragment )
+    }
+
+    static OnImgLoad() {
+        this.emit( 'imgLoaded', el )
+        el.removeAttribute('data-src')
     }
 
     static Range = document.createRange().selectNode( document.getElementsByTagName("div").item(0) )

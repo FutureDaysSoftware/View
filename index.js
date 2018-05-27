@@ -88,7 +88,7 @@ module.exports = class View extends EventEmitter {
         this.render()
     }
 
-    async onNavigation() {
+    onNavigation() {
         return this.show().catch( this.Error )
     }
 
@@ -133,7 +133,7 @@ module.exports = class View extends EventEmitter {
             if( this.Views && this.Views[ obj.view ] ) opts = typeof this.Views[ obj.view ] === "object" ? this.Views[ obj.view ] : Reflect.apply( this.Views[ obj.view ], this, [ ] )
             if( this.Views && this.Views[ name ] ) opts = typeof this.Views[ name ] === "object" ? this.Views[ name ] : Reflect.apply( this.Views[ name ], this, [ ] )
 
-            this.views[ name ] = this.Factory.create( obj.view, Object.assign( { insertion: { el: obj.el, method: 'insertBefore' } }, opts ) )
+            this.views[ name ] = this.Factory.create( obj.view, { insertion: { el: obj.el, method: 'insertBefore' }, ...opts } )
 
             if( this.events.views ) {
                 if( this.events.views[ name ] ) this.events.views[ name ].forEach( arr => this.views[ name ].on( arr[0], eventData => Reflect.apply( arr[1], this, [ eventData ] ) ) )
@@ -149,10 +149,11 @@ module.exports = class View extends EventEmitter {
         return this
     }
 
-    scootAway() {
-        this.Toast.showMessage( 'error', 'You are not allowed here.')
-        .catch( e => { this.Error( e ); this.emit( 'navigate', `/` ) } )
-        .then( () => this.emit( 'navigate', `/` ) )
+    async scootAway() {
+        try {
+            await this.Toast.showMessage( 'error', 'You are not allowed here.')
+            this.emit( 'navigate', `/` )
+        } catch( err ) { this.Error( e ); this.emit( 'navigate', `/` ) }
 
         return this
     }
