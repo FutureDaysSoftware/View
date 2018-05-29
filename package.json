@@ -14,14 +14,14 @@
     "uuid": "^3.2.1"
   },
   "license": "private",
-  "main": "dist/bundle.js.gz",
+  "main": "dist/bundle.js",
   "name": "View",
   "repository": {
     "type": "git",
     "url": "https://github.com/FutureDaysSoftware/View.git"
   },
   "scripts": {
-    "build:js": "browserify index.js -t [ babelify --presets [ env stage-2 ] ] | uglifyjs > dist/bundle.js && gzip -c dist/bundle.js > dist/bundle.js.gz"
+    "build:js": "browserify index.js -t [ babelify --presets [ env stage-2 ] ] | uglifyjs > dist/bundle.js"
   },
   "version": "0.0.0"
 }

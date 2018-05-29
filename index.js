@@ -3,14 +3,12 @@ const { EventEmitter } = require('events')
 module.exports = class View extends EventEmitter {
     
     static Error = require('./lib/MyError')
-    static Factory = require('./Factory')
-    //Model = require('../models/__proto__')
+    //static Factory = require('Factory')
+    //static Model = require('Model')
     static OptimizedResize = require('./lib/OptimizedResize')
-    static Slurper = require('./Slurper')
-    static TemplateContext = require('./TemplateContext')
-    static Util = require('./lib/Util')
+    static StringUtil = require('./util/StringUtil')
     static UUID = require('uuid/v4')
-    static Xhr = require('./Xhr')
+    static Xhr = require('./lib/Xhr')
 
     animate( el, klass ) {
         return new Promise( resolve => {
@@ -25,9 +23,18 @@ module.exports = class View extends EventEmitter {
         } )
     }
 
+    bindEvent( key, event, el ) {
+        const els = el ? [ el ] : Array.isArray( this.els[ key ] ) ? this.els[ key ] : [ this.els[ key ] ],
+           name = this.getEventMethodName( key, event )
+
+        if( !this[ `_${name}` ] ) this[ `_${name}` ] = e => this[ name ](e)
+
+        els.forEach( el => el.addEventListener( event || 'click', this[ `_${name}` ] ) )
+    }
+
     constructor( opts={} ) {
         super()
-        Object.assign( this, opts, { els: { }, views: { } } )
+        Object.assign( this, opts )
 
         if( this.requiresLogin && ( !this.user.isLoggedIn() ) ) return this.handleLogin()
         if( this.user && !this.isAllowed( this.user ) ) return this.scootAway()
@@ -37,16 +44,36 @@ module.exports = class View extends EventEmitter {
 
     content = document.querySelector('#content')
 
-    async delete( { silent } = { silent: false } ) {
+    delegateEvents( key, el ) {
+        var type = typeof this.events[key]
+
+        if( type === "string" ) { this.bindEvent( key, this.events[key], el ) }
+        else if( Array.isArray( this.events[key] ) ) {
+            this.events[ key ].forEach( eventObj => this.bindEvent( key, eventObj ) )
+        } else {
+            this.bindEvent( key, this.events[key].event )
+        }
+    }
+
+    async delete() {
         await this.hide()
 
         const { container } = this.els,
             parent = container.parentNode
         if( container && parent ) parent.removeChild( container )
-        if( !silent ) this.emit('deleted')
+        this.emit('deleted')
     }
 
+    els = { }
+
     events = { }
+
+    fadeInImage( el ) {
+        el.onload = () => this.onImgLoad( el )
+        el.setAttribute( 'src', el.getAttribute('data-src') )
+    }
+
+    getEventMethodName( key, event ) { return `on${this.StringUtil.capitalizeFirstLetter(key)}${this.StringUtil.capitalizeFirstLetter(event)}` }
 
     getTemplateOptions() {
        return { user: this.user ? this.user.data : {}, model: this.model }
@@ -64,6 +91,18 @@ module.exports = class View extends EventEmitter {
     async hideEl( el ) { await this.animate( el, 'hide' ); el.classList.add('hidden') }
 
     hideSync() { this.els.container.classList.add('hidden'); return this }
+
+    htmlToFragment( str ) {
+        return this.Factory.range.createContextualFragment( str )
+    }
+
+    insertToDom( fragment, options ) {
+        const insertion = typeof options.insertion === 'function' ? options.insertion() : options.insertion;
+
+        insertion.method === 'insertBefore'
+            ? insertion.el.parentNode.insertBefore( fragment, insertion.el )
+            : insertion.el[ insertion.method || 'appendChild' ]( fragment )
+    }
 
     isAllowed( user ) {
         if( !this.requiresRole ) return true
@@ -83,6 +122,11 @@ module.exports = class View extends EventEmitter {
     
     isHidden( el ) { return el ? el.classList.contains('hidden') : this.els.container.classList.contains('hidden') }
 
+    onImgLoad() {
+        this.emit( 'imgLoaded', el )
+        el.removeAttribute('data-src')
+    }
+
     onLogin() {
         if( !this.isAllowed( this.user ) ) return this.scootAway()
         this.render()
@@ -97,15 +141,17 @@ module.exports = class View extends EventEmitter {
         return this
     }
 
+    slurp = { attr: 'data-js', view: 'data-view', name: 'data-name', img: 'data-src' }
+
     postRender() { return this }
 
     render() {
         if( this.data ) this.model = Object.create( this.Model, { } ).constructor( this.data )
 
-        this.slurp( {
+        this.slurpTemplate( {
             insertion: this.insertion || { el: document.body },
             isView: true,
-            template: Reflect.apply( this.template, this.TemplateContext, [ this.getTemplateOptions() ] )
+            template: Reflect.apply( this.template, this, [ this.getTemplateOptions() ] )
         } )
 
         this.els.container.classList.add( this.name )
@@ -164,7 +210,40 @@ module.exports = class View extends EventEmitter {
 
     showSync() { this.els.container.classList.remove('hidden'); return this }
 
-    slurp( opts ) { return Reflect.apply( this.Slurper.slurpTemplate, this, [ this.els, this.events, this.subviewElements, opts ] ) }
+    slurpEl( el ) {
+        const key = el.getAttribute( this.slurp.attr ) || 'container'
+
+        this.els[ key ] = Array.isArray( this.els[ key ] )
+            ? this.els[ key ].concat( el )
+            : ( this.els[ key ] !== undefined )
+                ? [ this.els[ key ], el ]
+                : el
+
+        el.removeAttribute( this.slurp.attr )
+
+        if( this.events[ key ] ) this.delegateEvents( key, el )
+    }
+
+    slurpTemplate( options ) {
+        const fragment = this.htmlToFragment( options.template ),
+            { attr, view, name, img } = this.slurp,
+            selector = `[${attr}]`,
+            viewSelector = `[${view}]`,
+            imgSelector = `[${img}]`,
+            firstEl = fragment.querySelector('*')
+
+        if( options.isView || firstEl.getAttribute( attr ) ) this.slurpEl( firstEl );
+
+        [ ...fragment.querySelectorAll( `${selector}, ${viewSelector}, ${imgSelector}` ) ].forEach( el => {
+            if( el.hasAttribute( attr ) ) { this.slurpEl( el ) }
+            else if( el.hasAttribute( img ) ) { this.fadeInImage( el ) }
+            else if( el.hasAttribute( view ) ) {
+                this.subviewElements.push( { el, view: el.getAttribute( view ), name: el.getAttribute( name ) } )
+            }
+        } )
+
+        this.InsertToDom( fragment, options )
+    }
 
     subviewElements = [ ]
 
@@ -174,5 +253,7 @@ module.exports = class View extends EventEmitter {
 
         els.forEach( el => el.removeEventListener( event || 'click', this[ `_${name}` ] ) )
     }
+
+    views = { }
 
 }
