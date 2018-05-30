@@ -6,8 +6,8 @@ module.exports = class View extends EventEmitter {
     //static Factory = require('Factory')
     //static Model = require('Model')
     static OptimizedResize = require('./lib/OptimizedResize')
-    static StringUtil = require('./util/StringUtil')
-    static UUID = require('uuid/v4')
+    static Util = require('./util/index')
+    static TemplateContext = require('./TemplateContext')
     static Xhr = require('./lib/Xhr')
 
     animate( el, klass ) {
@@ -73,14 +73,14 @@ module.exports = class View extends EventEmitter {
         el.setAttribute( 'src', el.getAttribute('data-src') )
     }
 
-    getEventMethodName( key, event ) { return `on${this.StringUtil.capitalizeFirstLetter(key)}${this.StringUtil.capitalizeFirstLetter(event)}` }
+    getEventMethodName( key, event ) { return `on${View.Util.capitalizeFirstLetter(key)}${View.Util.capitalizeFirstLetter(event)}` }
 
     getTemplateOptions() {
        return { user: this.user ? this.user.data : {}, model: this.model }
     }
 
     handleLogin() {
-        this.Factory.create( 'login', { insertion: { el: document.querySelector('#content') } } )
+        View.Factory.create( 'login', { insertion: { el: document.querySelector('#content') } } )
         .on( "loggedIn", () => this.onLogin() )
 
         return this
@@ -93,7 +93,7 @@ module.exports = class View extends EventEmitter {
     hideSync() { this.els.container.classList.add('hidden'); return this }
 
     htmlToFragment( str ) {
-        return this.Factory.range.createContextualFragment( str )
+        return View.Factory.range.createContextualFragment( str )
     }
 
     insertToDom( fragment, options ) {
@@ -133,7 +133,7 @@ module.exports = class View extends EventEmitter {
     }
 
     onNavigation() {
-        return this.show().catch( this.Error )
+        return this.show().catch( View.Error )
     }
 
     showNoAccess() {
@@ -151,7 +151,7 @@ module.exports = class View extends EventEmitter {
         this.slurpTemplate( {
             insertion: this.insertion || { el: document.body },
             isView: true,
-            template: Reflect.apply( this.template, this, [ this.getTemplateOptions() ] )
+            template: Reflect.apply( this.template, View.TemplateContext, [ this.getTemplateOptions() ] )
         } )
 
         this.els.container.classList.add( this.name )
@@ -160,7 +160,7 @@ module.exports = class View extends EventEmitter {
 
         this.renderSubviews()
 
-        if( this.size ) { this.size(); this.OptimizedResize.add( this.size.bind(this) ) }
+        if( this.size ) { this.size(); View.OptimizedResize.add( this.size.bind(this) ) }
 
         return this.postRender()
     }
@@ -179,7 +179,7 @@ module.exports = class View extends EventEmitter {
             if( this.Views && this.Views[ obj.view ] ) opts = typeof this.Views[ obj.view ] === "object" ? this.Views[ obj.view ] : Reflect.apply( this.Views[ obj.view ], this, [ ] )
             if( this.Views && this.Views[ name ] ) opts = typeof this.Views[ name ] === "object" ? this.Views[ name ] : Reflect.apply( this.Views[ name ], this, [ ] )
 
-            this.views[ name ] = this.Factory.create( obj.view, { insertion: { el: obj.el, method: 'insertBefore' }, ...opts } )
+            this.views[ name ] = View.Factory.create( obj.view, { insertion: { el: obj.el, method: 'insertBefore' }, ...opts } )
 
             if( this.events.views ) {
                 if( this.events.views[ name ] ) this.events.views[ name ].forEach( arr => this.views[ name ].on( arr[0], eventData => Reflect.apply( arr[1], this, [ eventData ] ) ) )
@@ -199,7 +199,7 @@ module.exports = class View extends EventEmitter {
         try {
             await this.Toast.showMessage( 'error', 'You are not allowed here.')
             this.emit( 'navigate', `/` )
-        } catch( err ) { this.Error( e ); this.emit( 'navigate', `/` ) }
+        } catch( err ) { View.Error( e ); this.emit( 'navigate', `/` ) }
 
         return this
     }
