@@ -14,7 +14,7 @@
     "uuid": "^3.2.1"
   },
   "license": "private",
-  "main": "dist/bundle.js",
+  "main": "index.js",
   "name": "View",
   "repository": {
     "type": "git",
