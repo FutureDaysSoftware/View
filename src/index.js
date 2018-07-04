@@ -7,7 +7,7 @@ module.exports = class View extends EventEmitter {
     //static Model = require('Model')
     static OptimizedResize = require('./lib/OptimizedResize')
     static Util = require('./util/index')
-    static TemplateContext = require('./TemplateContext')
+    static TemplateContext = require('./lib/TemplateContext')
     static Xhr = require('./lib/Xhr')
 
     animate( el, klass ) {

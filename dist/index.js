@@ -483,4 +483,4 @@ module.exports = (_temp = _class = function (_EventEmitter) {
         }
     }]);
     return View;
-}(EventEmitter), _class.Error = require('./lib/MyError'), _class.OptimizedResize = require('./lib/OptimizedResize'), _class.Util = require('./util/index'), _class.TemplateContext = require('./TemplateContext'), _class.Xhr = require('./lib/Xhr'), _temp);
+}(EventEmitter), _class.Error = require('./lib/MyError'), _class.OptimizedResize = require('./lib/OptimizedResize'), _class.Util = require('./util/index'), _class.TemplateContext = require('./lib/TemplateContext'), _class.Xhr = require('./lib/Xhr'), _temp);
