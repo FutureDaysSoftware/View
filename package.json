@@ -17,7 +17,8 @@
     "url": "https://github.com/FutureDaysSoftware/View.git"
   },
   "scripts": {
-    "build": "babel src -d dist"
+    "build": "babel src -d dist",
+    "postversion": "git push && git push --tags"
   },
   "version": "1.0.1"
 }
