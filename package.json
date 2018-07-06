@@ -20,5 +20,5 @@
     "build": "babel src -d dist",
     "postversion": "git push && git push --tags"
   },
-  "version": "1.0.1"
+  "version": "1.0.2"
 }
