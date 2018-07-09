@@ -32,48 +32,59 @@ var _typeof2 = require('babel-runtime/helpers/typeof');
 
 var _typeof3 = _interopRequireDefault(_typeof2);
 
-var _assign = require('babel-runtime/core-js/object/assign');
+var _promise = require('babel-runtime/core-js/promise');
 
-var _assign2 = _interopRequireDefault(_assign);
+var _promise2 = _interopRequireDefault(_promise);
 
 var _getPrototypeOf = require('babel-runtime/core-js/object/get-prototype-of');
 
 var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
 
-var _promise = require('babel-runtime/core-js/promise');
-
-var _promise2 = _interopRequireDefault(_promise);
-
 var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
 var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstructorReturn');
-
-var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
 
 var _createClass2 = require('babel-runtime/helpers/createClass');
 
 var _createClass3 = _interopRequireDefault(_createClass2);
 
+var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstructorReturn');
+
+var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
 var _inherits2 = require('babel-runtime/helpers/inherits');
 
 var _inherits3 = _interopRequireDefault(_inherits2);
 
-var _class, _temp;
+var _class, _temp2;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var _require = require('events'),
     EventEmitter = _require.EventEmitter;
 
-module.exports = (_temp = _class = function (_EventEmitter) {
+module.exports = (_temp2 = _class = function (_EventEmitter) {
     (0, _inherits3.default)(View, _EventEmitter);
+
+    function View() {
+        var _ref;
+
+        var _temp, _this, _ret;
+
+        (0, _classCallCheck3.default)(this, View);
+
+        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+        }
+
+        return _ret = (_temp = (_this = (0, _possibleConstructorReturn3.default)(this, (_ref = View.__proto__ || (0, _getPrototypeOf2.default)(View)).call.apply(_ref, [this].concat(args))), _this), _this.content = document.querySelector('#content'), _this.slurp = { attr: 'data-js', view: 'data-view', name: 'data-name', img: 'data-src' }, _this.subviewElements = [], _this.views = {}, _temp), (0, _possibleConstructorReturn3.default)(_this, _ret);
+    }
+    //static Factory = require('Factory')
+    //static Model = require('Model')
+
+
     (0, _createClass3.default)(View, [{
         key: 'animate',
-
-        //static Factory = require('Factory')
-        //static Model = require('Model')
         value: function animate(el, klass) {
             return new _promise2.default(function (resolve) {
                 var onAnimationEnd = function onAnimationEnd(e) {
@@ -102,32 +113,7 @@ module.exports = (_temp = _class = function (_EventEmitter) {
                 return el.addEventListener(event || 'click', _this2['_' + name]);
             });
         }
-    }]);
-
-    function View() {
-        var _ret, _ret2, _ret3;
-
-        var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        (0, _classCallCheck3.default)(this, View);
-
-        var _this = (0, _possibleConstructorReturn3.default)(this, (View.__proto__ || (0, _getPrototypeOf2.default)(View)).call(this));
-
-        _this.content = document.querySelector('#content');
-        _this.els = {};
-        _this.events = {};
-        _this.slurp = { attr: 'data-js', view: 'data-view', name: 'data-name', img: 'data-src' };
-        _this.subviewElements = [];
-        _this.views = {};
-
-        (0, _assign2.default)(_this, opts);
-
-        if (_this.requiresLogin && !_this.user.isLoggedIn()) return _ret = _this.handleLogin(), (0, _possibleConstructorReturn3.default)(_this, _ret);
-        if (_this.user && !_this.isAllowed(_this.user)) return _ret2 = _this.scootAway(), (0, _possibleConstructorReturn3.default)(_this, _ret2);
-
-        return _ret3 = _this.render(), (0, _possibleConstructorReturn3.default)(_this, _ret3);
-    }
-
-    (0, _createClass3.default)(View, [{
+    }, {
         key: 'delegateEvents',
         value: function delegateEvents(key, el) {
             var _this3 = this;
@@ -147,7 +133,7 @@ module.exports = (_temp = _class = function (_EventEmitter) {
     }, {
         key: 'delete',
         value: function () {
-            var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee() {
+            var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee() {
                 var container, parent;
                 return _regenerator2.default.wrap(function _callee$(_context) {
                     while (1) {
@@ -171,7 +157,7 @@ module.exports = (_temp = _class = function (_EventEmitter) {
             }));
 
             function _delete() {
-                return _ref.apply(this, arguments);
+                return _ref2.apply(this, arguments);
             }
 
             return _delete;
@@ -215,7 +201,7 @@ module.exports = (_temp = _class = function (_EventEmitter) {
     }, {
         key: 'hideEl',
         value: function () {
-            var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(el) {
+            var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(el) {
                 return _regenerator2.default.wrap(function _callee2$(_context2) {
                     while (1) {
                         switch (_context2.prev = _context2.next) {
@@ -233,8 +219,8 @@ module.exports = (_temp = _class = function (_EventEmitter) {
                 }, _callee2, this);
             }));
 
-            function hideEl(_x2) {
-                return _ref2.apply(this, arguments);
+            function hideEl(_x) {
+                return _ref3.apply(this, arguments);
             }
 
             return hideEl;
@@ -378,7 +364,7 @@ module.exports = (_temp = _class = function (_EventEmitter) {
     }, {
         key: 'scootAway',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3() {
+            var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3() {
                 return _regenerator2.default.wrap(function _callee3$(_context3) {
                     while (1) {
                         switch (_context3.prev = _context3.next) {
@@ -409,7 +395,7 @@ module.exports = (_temp = _class = function (_EventEmitter) {
             }));
 
             function scootAway() {
-                return _ref3.apply(this, arguments);
+                return _ref4.apply(this, arguments);
             }
 
             return scootAway;
@@ -483,6 +469,16 @@ module.exports = (_temp = _class = function (_EventEmitter) {
                 return el.removeEventListener(event || 'click', _this8['_' + name]);
             });
         }
+    }, {
+        key: 'els',
+        get: function get() {
+            return {};
+        }
+    }, {
+        key: 'events',
+        get: function get() {
+            return {};
+        }
     }]);
     return View;
-}(EventEmitter), _class.Error = require('./lib/MyError'), _class.OptimizedResize = require('./lib/OptimizedResize'), _class.Util = require('./util/index'), _class.TemplateContext = require('./lib/TemplateContext'), _class.Xhr = require('./lib/Xhr'), _temp);
+}(EventEmitter), _class.Error = require('./lib/MyError'), _class.OptimizedResize = require('./lib/OptimizedResize'), _class.Util = require('./util/index'), _class.TemplateContext = require('./lib/TemplateContext'), _class.Xhr = require('./lib/Xhr'), _temp2);

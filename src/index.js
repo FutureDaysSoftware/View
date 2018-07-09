@@ -32,16 +32,6 @@ module.exports = class View extends EventEmitter {
         els.forEach( el => el.addEventListener( event || 'click', this[ `_${name}` ] ) )
     }
 
-    constructor( opts={} ) {
-        super()
-        Object.assign( this, opts )
-
-        if( this.requiresLogin && ( !this.user.isLoggedIn() ) ) return this.handleLogin()
-        if( this.user && !this.isAllowed( this.user ) ) return this.scootAway()
-
-        return this.render()
-    }
-
     content = document.querySelector('#content')
 
     delegateEvents( key, el ) {
@@ -64,9 +54,9 @@ module.exports = class View extends EventEmitter {
         this.emit('deleted')
     }
 
-    els = { }
+    get els() { return { } }
 
-    events = { }
+    get events() { return { } }
 
     fadeInImage( el ) {
         el.onload = () => this.onImgLoad( el )
