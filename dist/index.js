@@ -469,7 +469,7 @@ module.exports = (_temp = _class = function (_EventEmitter) {
                 }
             });
 
-            this.InsertToDom(fragment, options);
+            this.insertToDom(fragment, options);
         }
     }, {
         key: 'unbindEvent',

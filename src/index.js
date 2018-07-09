@@ -244,7 +244,7 @@ module.exports = class View extends EventEmitter {
             }
         } )
 
-        this.InsertToDom( fragment, options )
+        this.insertToDom( fragment, options )
     }
 
     subviewElements = [ ]
