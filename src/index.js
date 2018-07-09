@@ -93,7 +93,9 @@ module.exports = class View extends EventEmitter {
     hideSync() { this.els.container.classList.add('hidden'); return this }
 
     htmlToFragment( str ) {
-        return View.Factory.range.createContextualFragment( str )
+        const range = document.createRange();
+        range.selectNode(document.getElementsByTagName("div").item(0))
+        return range.createContextualFragment( str )
     }
 
     insertToDom( fragment, options ) {
