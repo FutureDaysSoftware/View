@@ -247,7 +247,9 @@ module.exports = (_temp = _class = function (_EventEmitter) {
     }, {
         key: 'htmlToFragment',
         value: function htmlToFragment(str) {
-            return View.Factory.range.createContextualFragment(str);
+            var range = document.createRange();
+            range.selectNode(document.getElementsByTagName("div").item(0));
+            return range.createContextualFragment(str);
         }
     }, {
         key: 'insertToDom',
