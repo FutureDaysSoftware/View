@@ -54,7 +54,7 @@ module.exports = class View extends EventEmitter {
         this.emit('deleted')
     }
 
-    get els() { return { } }
+    els = { }
 
     get events() { return { } }
 
