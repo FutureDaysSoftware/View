@@ -56,7 +56,8 @@ module.exports = class View extends EventEmitter {
 
     els = { }
 
-    get events() { return { } }
+    //get events() { return { } }
+    events = { }
 
     fadeInImage( el ) {
         el.onload = () => this.onImgLoad( el )
@@ -86,6 +87,15 @@ module.exports = class View extends EventEmitter {
         const range = document.createRange();
         range.selectNode(document.getElementsByTagName("div").item(0))
         return range.createContextualFragment( str )
+    }
+
+    initialize( opts ) {
+        Object.assign( this, opts )
+
+        if( this.requiresLogin && ( !this.user.isLoggedIn() ) ) return this.handleLogin()
+        if( this.user && !this.isAllowed( this.user ) ) return this.scootAway()
+
+        return this.render()
     }
 
     insertToDom( fragment, options ) {
