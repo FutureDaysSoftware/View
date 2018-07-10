@@ -4,7 +4,6 @@ module.exports = class View extends EventEmitter {
     
     static Error = require('./lib/MyError')
     //static Factory = require('Factory')
-    //static Model = require('Model')
     static OptimizedResize = require('./lib/OptimizedResize')
     static Util = require('./util/index')
     static TemplateContext = require('./lib/TemplateContext')
@@ -56,7 +55,6 @@ module.exports = class View extends EventEmitter {
 
     els = { }
 
-    //get events() { return { } }
     events = { }
 
     fadeInImage( el ) {
@@ -84,9 +82,7 @@ module.exports = class View extends EventEmitter {
     hideSync() { this.els.container.classList.add('hidden'); return this }
 
     htmlToFragment( str ) {
-        const range = document.createRange();
-        range.selectNode(document.getElementsByTagName("div").item(0))
-        return range.createContextualFragment( str )
+        return this.range.createContextualFragment( str )
     }
 
     initialize( opts ) {
