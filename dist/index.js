@@ -84,7 +84,6 @@ module.exports = (_temp2 = _class = function (_EventEmitter) {
         return _ret = (_temp = (_this = (0, _possibleConstructorReturn3.default)(this, (_ref = View.__proto__ || (0, _getPrototypeOf2.default)(View)).call.apply(_ref, [this].concat(args))), _this), _this.content = document.querySelector('#content'), _this.els = {}, _this.events = {}, _this.slurp = { attr: 'data-js', view: 'data-view', name: 'data-name', img: 'data-src' }, _this.subviewElements = [], _this.views = {}, _temp), (0, _possibleConstructorReturn3.default)(_this, _ret);
     }
     //static Factory = require('Factory')
-    //static Model = require('Model')
 
 
     (0, _createClass3.default)(View, [{
@@ -166,9 +165,6 @@ module.exports = (_temp2 = _class = function (_EventEmitter) {
 
             return _delete;
         }()
-
-        //get events() { return { } }
-
     }, {
         key: 'fadeInImage',
         value: function fadeInImage(el) {
@@ -240,9 +236,7 @@ module.exports = (_temp2 = _class = function (_EventEmitter) {
     }, {
         key: 'htmlToFragment',
         value: function htmlToFragment(str) {
-            var range = document.createRange();
-            range.selectNode(document.getElementsByTagName("div").item(0));
-            return range.createContextualFragment(str);
+            return this.range.createContextualFragment(str);
         }
     }, {
         key: 'initialize',
