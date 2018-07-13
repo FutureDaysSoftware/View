@@ -77,7 +77,11 @@ module.exports = class View extends EventEmitter {
 
     hide() { return this.hideEl( this.els.container ) }
 
-    async hideEl( el ) { await this.animate( el, 'hide' ); el.classList.add('hidden') }
+    async hideEl( el ) {
+        if( this.isHidden( el ) ) return
+        await this.animate( el, 'hide' )
+        el.classList.add('hidden')
+    }
 
     hideSync() { this.els.container.classList.add('hidden'); return this }
 

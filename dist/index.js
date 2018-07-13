@@ -209,12 +209,21 @@ module.exports = (_temp2 = _class = function (_EventEmitter) {
                     while (1) {
                         switch (_context2.prev = _context2.next) {
                             case 0:
-                                _context2.next = 2;
-                                return this.animate(el, 'hide');
+                                if (!this.isHidden(el)) {
+                                    _context2.next = 2;
+                                    break;
+                                }
+
+                                return _context2.abrupt('return');
 
                             case 2:
+                                _context2.next = 4;
+                                return this.animate(el, 'hide');
+
+                            case 4:
                                 el.classList.add('hidden');
-                            case 3:
+
+                            case 5:
                             case 'end':
                                 return _context2.stop();
                         }
